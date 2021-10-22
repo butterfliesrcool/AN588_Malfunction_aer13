@@ -1,0 +1,133 @@
+---
+title: "aer13_OriginalHomeworkCode_04"
+author: "Abby_Robinson"
+date: "10/20/2021"
+output: html_document
+---
+#What's Your Malfunction? 
+
+##[1] Write a simple R function, Z.prop.test(), that can perform one- or two-sample Z-tests for proportion data
+
+```{r}
+#p1 = estimated proportion based on sample 
+#n1 = estimated sample size based on sample 
+
+#p2 = estimated proportion based on second sample (if two-sample test)
+#n2 = estimated sample size based on second sample (if two-sample test)
+
+#p0 = (no default) as the expected value for the population proportion
+  
+x <- c(0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,0,0,0,1)
+length(x)
+sum(x)
+
+Z.prop.test = function(p1, n1, p0, phat){
+  
+Rule1 <- n1 * phat
+Rule2 <- n1 * (1 - phat)
+
+one.tail.p <- NULL
+
+Z <- (phat-p0)/sqrt((p0*(1-p0))/n1)
+
+one.tail.p <- round(pnorm(abs(Z),lower.tail = FALSE),3)
+
+CI <- phat+c(-1,1)*qnorm(0.975)*sqrt(phat*(1-phat)/n1)
+
+cat( "Rule of thumb 1 =", Rule1, "\n", 
+     
+"Rule of thumb 2 =", Rule2, "\n",
+
+"z =",Z, "\n", 
+
+"one-tailed probability =", one.tail.p, "\n",
+
+"two-tailed probability =", 2*one.tail.p, "\n",
+
+"CI =" ,CI,)}
+
+Z.prop.test(8, 29, 14.5, 0.27)
+```
+ERROR: NaNs producedError in cat("Rule of thumb 1 =", Rule1, "\n", "Rule of thumb 2 =", Rule2, : argument is missing, with no default
+
+Not sure how to code for the p values and test alternatives... this is a struggle... 
+
+
+[2] The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. For this exercise, the end aim is to fit a simple linear regression model to predict longevity (MaxLongevity_m) measured in months from species’ brain size (Brain_Size_Species_Mean) measured in grams. Do the following for both longevity~brain size and log(longevity)~log(brain size)
+
+load libraries
+```{r}
+library(curl)
+library(ggplot2)
+library(gridExtra)
+library(lmodel2)
+```
+
+```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall21/KamilarAndCooperData.csv")
+data  <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+data
+```
+
+```{r}
+m <- lm(MaxLongevity_m ~ Brain_Size_Species_Mean, data = data)
+m
+```
+
+```{r}
+g <- ggplot(data = data, aes(x = Brain_Size_Species_Mean, y = MaxLongevity_m))
+g <- g + geom_point()
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+```
+
+```{r}
+df <- data.frame(x = data$MaxLongevity_m, y = data$Brain_Size_Species_Mean)
+lm_eqn <- function(df){
+    m <- lm(y ~ x, df);
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+         list(a = format(unname(coef(m)[1]), digits = 2),
+              b = format(unname(coef(m)[2]), digits = 2),
+             r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));
+}
+
+p1 <- g + geom_text(x = 200, y = 400, label = lm_eqn(df), parse = TRUE)
+p1
+```
+This isn't working.... I dont know why...
+
+```{r}
+ci <- confint(m, level = 0.90)  # using the results of lm()
+ci
+```
+
+```{r}
+library(manipulate)
+```
+
+```{r}
+manipulate(slope.test(beta1), beta1 = slider(-1, 1, initial = 0, step = 0.005))
+```
+
+
+Log Model 
+
+```{r}
+longevity <- log(data$MaxLongevity_m)
+
+brain.size <- log(data$Brain_Size_Species_Mean)
+
+m2 <- lm(longevity ~ brain.size, data = data)
+m2
+```
+
+```{r}
+g <- ggplot(data = data, aes(x = brain.size, y = longevity))
+g <- g + geom_point()
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+g
+```
+
+Using the log function distributes the datapoints more evenly across the graph. This is a data transformation technique that can be used to make data fit the normal distribution, yes? 
+
+
