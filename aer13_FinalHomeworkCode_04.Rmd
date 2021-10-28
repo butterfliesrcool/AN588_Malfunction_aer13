@@ -1,0 +1,188 @@
+---
+title: "aer13_FinalHomeworkCode_04"
+author: "Abby_Robinson"
+date: "10/20/2021"
+output: html_document
+---
+#What's Your Malfunction? 
+
+##[1] Write a simple R function, Z.prop.test(), that can perform one- or two-sample Z-tests for proportion data
+
+Function for z test 
+```{r}
+#p1 = estimated proportion based on sample 
+#n1 = estimated sample size based on sample 
+
+#p2 = estimated proportion based on second sample (if two-sample test)
+#n2 = estimated sample size based on second sample (if two-sample test)
+
+#p = (no default) as the expected value for the population proportion
+  
+Z.prop.test = function(p1, n1, p, p2, n2){
+  
+if(is.null(p2)){ 
+  
+one.tail.p <- NULL
+
+rule_one <- (n1*p1)
+
+rule_two <- (n1*(1-p1))
+
+Z <- (p1-p)/sqrt((p*(1-p))/n1)
+
+one.tail.p <- round(pnorm(abs(Z),lower.tail = FALSE),3)
+
+CI <- p1+c(-1,1)*qnorm(0.975)*sqrt(p1*(1-p1)/n1)
+
+p.value <- pnorm(-abs(Z))
+
+cat("Rule One =", rule_one <- rule_one, "\n",
+    "Rule Two =", rule_two <- rule_two, "\n",
+    "Z_score =", Z <- Z, "\n", 
+    "one_tailed =", one.tail.p <- one.tail.p, "\n", 
+    "one_tailed_p_value =", p.value <- p.value, "\n",
+    "two_tailed =", 2*one.tail.p, "\n",
+    "two-tailed_p_value =", 2*p.value, "\n",
+    "CI =", CI <- CI, "\n")
+
+} else { 
+  
+Z.two.sample <- (p1-p2)/ sqrt((p*(1-p))*((1/n1)+(1/n2)))
+
+CI.two.sample <- CI <- p2+c(-1,1)*qnorm(0.975)*sqrt(p2*(1-p2)/n2)
+
+P.Value <- pnorm(-Z.two.sample)
+
+cat( "Z_score =", Z.two.sample <- Z.two.sample, "\n", 
+     "CI =", CI.two.sample <- CI.two.sample, "\n", 
+     "P-Value =", P.Value <- P.Value, "\n")
+}
+  
+}
+```
+
+Run one sample z test 
+```{r}
+Z.prop.test(0.276, 29, 0.5,p2=NULL, 0)
+```
+
+Run two sample 
+```{r}
+Z.prop.test(0.276, 29, 0.5, 0.35, 35)
+```
+So, in the above code, you need to set p2 = 0 for the funciton to run the one sample z test 
+
+
+[2] The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. For this exercise, the end aim is to fit a simple linear regression model to predict longevity (MaxLongevity_m) measured in months from species’ brain size (Brain_Size_Species_Mean) measured in grams. Do the following for both longevity~brain size and log(longevity)~log(brain size)
+
+load libraries
+```{r}
+library(curl)
+library(ggplot2)
+library(gridExtra)
+library(lmodel2)
+```
+
+load dataset 
+```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall21/KamilarAndCooperData.csv")
+data  <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+data
+```
+
+linear regression model for longevity ~ brain size 
+
+```{r}
+m <- lm(MaxLongevity_m ~ Brain_Size_Species_Mean, data = data)
+m
+```
+
+use ggplot to graph data and use geom_point and geom_smooth to superimpose fitted line, use geom_text to append the equation using the intercept and slope from the above output 
+
+```{r}
+g <- ggplot(data = data, aes(x = Brain_Size_Species_Mean, y = MaxLongevity_m))
+g <- g + geom_point()
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+g <- g + geom_text(x=300, y = 300, label = " y = 1.218x + 248.952 ")
+g
+```
+
+Alternative code that will also give the r-squared 
+```{r}
+df <- data.frame(x = data$Brain_Size_Species_Mean, y = data$MaxLongevity_m)
+lm_eqn <- function(df){
+    m <- lm(y ~ x, df);
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+         list(a = format(unname(coef(m)[1]), digits = 2),
+              b = format(unname(coef(m)[2]), digits = 2),
+             r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));
+}
+
+p1 <- g + geom_text(x = 100, y = 800, label = lm_eqn(df), parse = TRUE)
+p1
+```
+
+linear regression model for log model 
+
+```{r}
+longevity <- log(data$MaxLongevity_m)
+
+brain.size <- log(data$Brain_Size_Species_Mean)
+
+m2 <- lm(longevity ~ brain.size, data = data)
+m2
+```
+
+use ggplot to graph model data 
+
+```{r}
+g <- ggplot(data = data, aes(x = brain.size, y = longevity))
+g <- g + geom_point()
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+g <- g + geom_text(x=1.5, y = 6.25, label = " y = 0.2341x + 4.8790 ")
+g
+```
+
+Alternative code: 
+
+```{r}
+
+
+df <- data.frame(x = brain.size, y = longevity)
+lm_eqn <- function(df){
+    m <- lm(y ~ x, df);
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+         list(a = format(unname(coef(m)[1]), digits = 2),
+              b = format(unname(coef(m)[2]), digits = 2),
+             r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));
+}
+
+p1 <- g + geom_text(x = 1.5, y = 6.5, label = lm_eqn(df), parse = TRUE)
+p1
+```
+
+Using the log function distributes the datapoints more evenly across the graph. This is a data transformation technique that can be used to make data fit the normal distribution, yes? 
+
+Identify and interpret the point estimate of the slope (β1), as well as the outcome of the test associated with the hypotheses H0: β1 = 0; HA: β1 ≠ 0. Also, find a 90 percent CI for the slope (β1) parameter.
+
+```{r}
+x <- na.omit(data$Brain_Size_Species_Mean)
+x
+y <- na.omit(data$MaxLongevity_m)
+y
+
+beta1 <- sum((y - mean(y)) * (x - mean(x)))/sum((x - mean(x))^2)
+beta1
+
+beta0 <- mean(y) - beta1 * mean(x)
+beta0
+
+```
+
+ci <- confint(beta1, level = 0.90)  
+ci
+
+The confint() function is givng me the error: $ operator is invalid for atomic vectors and I am not sure how to get around this 
+

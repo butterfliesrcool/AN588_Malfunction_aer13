@@ -11,41 +11,28 @@ output: html_document
 ```{r}
 #p1 = estimated proportion based on sample 
 #n1 = estimated sample size based on sample 
-
 #p2 = estimated proportion based on second sample (if two-sample test)
 #n2 = estimated sample size based on second sample (if two-sample test)
-
 #p0 = (no default) as the expected value for the population proportion
   
 x <- c(0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,0,0,0,1)
 length(x)
 sum(x)
-
 Z.prop.test = function(p1, n1, p0, phat){
   
 Rule1 <- n1 * phat
 Rule2 <- n1 * (1 - phat)
-
 one.tail.p <- NULL
-
 Z <- (phat-p0)/sqrt((p0*(1-p0))/n1)
-
 one.tail.p <- round(pnorm(abs(Z),lower.tail = FALSE),3)
-
 CI <- phat+c(-1,1)*qnorm(0.975)*sqrt(phat*(1-phat)/n1)
-
 cat( "Rule of thumb 1 =", Rule1, "\n", 
      
 "Rule of thumb 2 =", Rule2, "\n",
-
 "z =",Z, "\n", 
-
 "one-tailed probability =", one.tail.p, "\n",
-
 "two-tailed probability =", 2*one.tail.p, "\n",
-
 "CI =" ,CI,)}
-
 Z.prop.test(8, 29, 14.5, 0.27)
 ```
 ERROR: NaNs producedError in cat("Rule of thumb 1 =", Rule1, "\n", "Rule of thumb 2 =", Rule2, : argument is missing, with no default
@@ -90,7 +77,6 @@ lm_eqn <- function(df){
              r2 = format(summary(m)$r.squared, digits = 3)))
     as.character(as.expression(eq));
 }
-
 p1 <- g + geom_text(x = 200, y = 400, label = lm_eqn(df), parse = TRUE)
 p1
 ```
@@ -114,9 +100,7 @@ Log Model
 
 ```{r}
 longevity <- log(data$MaxLongevity_m)
-
 brain.size <- log(data$Brain_Size_Species_Mean)
-
 m2 <- lm(longevity ~ brain.size, data = data)
 m2
 ```
