@@ -1,0 +1,178 @@
+---
+title: "Malfunction_Regression_Question"
+author: "Abby_Robinson"
+date: "11/4/2021"
+output: html_document
+---
+
+[2] The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. For this exercise, the end aim is to fit a simple linear regression model to predict longevity (MaxLongevity_m) measured in months from species’ brain size (Brain_Size_Species_Mean) measured in grams. Do the following for both longevity~brain size and log(longevity)~log(brain size)
+
+load libraries
+```{r}
+library(curl)
+library(ggplot2)
+library(gridExtra)
+library(lmodel2)
+```
+
+load dataset 
+```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall21/KamilarAndCooperData.csv")
+data  <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+data
+```
+
+##Fit the regression model and, using {ggplot2}, produce a scatterplot with the fitted line superimposed upon the data. Append the the fitted model equation to your plot (HINT: use the function geom_text()).
+
+linear regression model for longevity ~ brain size 
+
+```{r}
+m <- lm(MaxLongevity_m ~ Brain_Size_Species_Mean, data = data)
+m
+```
+
+use ggplot to graph data and use geom_point and geom_smooth to superimpose fitted line, use geom_text to append the equation using the intercept and slope from the above output 
+
+```{r}
+g <- ggplot(data = data, aes(x = Brain_Size_Species_Mean, y = MaxLongevity_m))
+g <- g + geom_point()
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+g <- g + geom_text(x=300, y = 300, label = " y = 1.218x + 248.952 ")
+g
+```
+
+Alternative code that will also give the r-squared 
+```{r}
+df <- data.frame(x = data$Brain_Size_Species_Mean, y = data$MaxLongevity_m)
+lm_eqn <- function(df){
+    m <- lm(y ~ x, df);
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+         list(a = format(unname(coef(m)[1]), digits = 2),
+              b = format(unname(coef(m)[2]), digits = 2),
+             r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));
+}
+
+p1 <- g + geom_text(x = 100, y = 800, label = lm_eqn(df), parse = TRUE)
+p1
+```
+
+linear regression model for log model 
+
+```{r}
+longevity <- log(data$MaxLongevity_m)
+
+brain.size <- log(data$Brain_Size_Species_Mean)
+
+m2 <- lm(longevity ~ brain.size, data = data)
+m2
+```
+
+use ggplot to graph model data 
+
+```{r}
+g <- ggplot(data = data, aes(x = brain.size, y = longevity))
+g <- g + geom_point()
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+g <- g + geom_text(x=1.5, y = 6.25, label = " y = 0.2341x + 4.8790 ")
+g
+```
+
+Alternative code: 
+
+```{r}
+
+
+df <- data.frame(x = brain.size, y = longevity)
+lm_eqn <- function(df){
+    m <- lm(y ~ x, df);
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+         list(a = format(unname(coef(m)[1]), digits = 2),
+              b = format(unname(coef(m)[2]), digits = 2),
+             r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));
+}
+
+p1 <- g + geom_text(x = 1.5, y = 6.5, label = lm_eqn(df), parse = TRUE)
+p1
+```
+
+
+
+##Identify and interpret the point estimate of the slope (β1), as well as the outcome of the test associated with the hypotheses H0: β1 = 0; HA: β1 ≠ 0. Also, find a 90 percent CI for the slope (β1) parameter.
+
+##Using your model, add lines for the 90 percent confidence and prediction interval bands on the plot and add a legend to differentiate between the lines.
+
+I tried a few differnt things here to get the B1 and B0 and confidence intervals, and add those CIs to the graph, but nothing really worked... 
+
+```{r}
+m <- lm(data = data, MaxLongevity_m ~ Brain_Size_Species_Mean)
+summary(m)
+```
+
+```{r}
+d <- coef(summary(m))
+d <- data.frame(unlist(d))
+colnames(d) <- c("Est", "SE", "t", "p")
+d ## "Est" = point estimate???
+```
+```{r}
+ci <- confint(m, level = 0.90)  # using the results of lm()
+ci
+```
+
+```{r}
+beta0 <- t$Est[1]
+beta1 <- t$Est[2]
+h_hat <- beta1 * 150 + beta0
+h_hat
+```
+
+```{r}
+h_hat_difference <- (beta1 * 220 + beta0) - (beta1 * 180 + beta0)
+h_hat_difference
+```
+
+```{r}
+pi <- predict(m, newdata = data.frame(Brain_Size_Species_Mean = data$Brain_Size_Species_Mean), interval = "prediction",
+    level = 0.90)  # for a vector of values
+head(pi)
+```
+```{r}
+df <- cbind(df, pi)
+names(df) <- c("x", "y", "fit", "PIlwr", "PIupr")
+head(df)
+```
+
+```{r}
+g <- g + geom_line(data = df, aes(x = x, y = PIlwr), colour = "red")
+g <- g + geom_line(data = df, aes(x = x, y = PIupr), colour = "red")
+g
+```
+```{r}
+v <- seq(from = 10, to = 30, by = 1)
+m <- lm(data = data, MaxLongevity_m ~ Brain_Size_Species_Mean)
+ci <- predict(m, newdata = data.frame(age = v), interval = "confidence", level = 0.95)
+pi <- predict(m, newdata = data.frame(age = v), interval = "prediction", level = 0.95)
+plot(data = d, height ~ age)
+lines(x = v, y = ci[, 1], col = "black")
+lines(x = v, y = ci[, 2], col = "blue")
+lines(x = v, y = ci[, 3], col = "blue")
+lines(x = v, y = pi[, 2], col = "red")
+lines(x = v, y = pi[, 3], col = "red")
+```
+
+
+##Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm. Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
+
+Well, I don't really know what I'm doing so I personally don't trust the model at all. 
+
+```{r}
+pi <- predict(m, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction",
+    level = 0.90)  # for a single value
+pi
+```
+
+##Looking at your two models, which do you think is better? Why?
+
+Using the log function distributes the datapoints more evenly across the graph. This is a data transformation technique that can be used to make data fit the normal distribution, yes? So the log model is better? 
