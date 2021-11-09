@@ -72,6 +72,8 @@ Z.prop.test(0.276, 29, 0.5, 0.35, 35)
 ```
 So, in the above code, you need to set p2 = 0 for the funciton to run the one sample z test 
 
+*^yes. This looks good! I am a understanding that the rule_one and rule_two part are functioning to check for normal distribution? It is helpful to use "print" to give a message for when it doesn't fall in the distrbution, but maybe that is part of the cat() function that I am unaware of*
+
 
 [2] The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. For this exercise, the end aim is to fit a simple linear regression model to predict longevity (MaxLongevity_m) measured in months from species’ brain size (Brain_Size_Species_Mean) measured in grams. Do the following for both longevity~brain size and log(longevity)~log(brain size)
 
@@ -122,6 +124,8 @@ lm_eqn <- function(df){
 p1 <- g + geom_text(x = 100, y = 800, label = lm_eqn(df), parse = TRUE)
 p1
 ```
+
+*nice!*
 
 linear regression model for log model 
 
