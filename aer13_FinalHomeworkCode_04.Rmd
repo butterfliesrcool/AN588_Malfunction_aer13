@@ -72,7 +72,7 @@ Z.prop.test(0.276, 29, 0.5, 0.35, 35)
 ```
 So, in the above code, you need to set p2 = 0 for the funciton to run the one sample z test 
 
-*^yes. I am a understanding that the rule_one and rule_two part are functioning to check for normal distribution (rule of thumb)? It is helpful to use "print" to give a message for when it doesn't fall in the distrbution, but maybe that is part of the cat() function that I am unaware of. You aren't setting p0 or "alternative" in your function, but the confidence intervals still seem to work*
+*^yes. I am a understanding that the rule_one and rule_two part are functioning to check for normal distribution (rule of thumb)? It is helpful to use "print" to give a message for when it doesn't fall in the distrbution, but maybe that is part of the cat() function that I am unaware of. You aren't setting "alternative" in your function, but the confidence intervals still seem to work*
 
 
 [2] The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. For this exercise, the end aim is to fit a simple linear regression model to predict longevity (MaxLongevity_m) measured in months from species’ brain size (Brain_Size_Species_Mean) measured in grams. Do the following for both longevity~brain size and log(longevity)~log(brain size)
