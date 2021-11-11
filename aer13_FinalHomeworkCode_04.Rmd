@@ -167,7 +167,7 @@ p1 <- g + geom_text(x = 1.5, y = 6.5, label = lm_eqn(df), parse = TRUE)
 p1
 ```
 
-Using the log function distributes the datapoints more evenly across the graph. This is a data transformation technique that can be used to make data fit the normal distribution, yes? 
+Using the log function distributes the datapoints more evenly across the graph. This is a data transformation technique that can be used to make data fit the normal distribution, yes? *Pretty much- you can see that your original plot has some skew, and now the more extreme observations are closer to centrality*
 
 Identify and interpret the point estimate of the slope (β1), as well as the outcome of the test associated with the hypotheses H0: β1 = 0; HA: β1 ≠ 0. Also, find a 90 percent CI for the slope (β1) parameter.
 
@@ -185,8 +185,12 @@ beta0
 
 ```
 
+*you can also just summarize the model and find the estimates that way (same as how you did to write your equation in the model)*
+
 ci <- confint(beta1, level = 0.90)  
 ci
+
+*you only have one value for beta1, so it makes sense that it isn't able to find confidence intervals around it. In using the confint() function, you actually want to put your whole model object in there. So for you, it would be confint(m, level - 0.90). That will calculate the CIs for the slope and intercepts. Then to plot it, you use the predict() function to get all of the values around your best fit line. You can use that to find both confidence and prediction intervals (see module 12)*
 
 The confint() function is givng me the error: $ operator is invalid for atomic vectors and I am not sure how to get around this 
 
